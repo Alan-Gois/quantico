@@ -69,19 +69,28 @@ describe("StepsContainer", () => {
       <StepsContainer steps={[]} error={errorMessage} />
     );
 
-    expect(screen.getByText("Erro ao carregar passos")).toBeInTheDocument();
+    expect(screen.getAllByText("Erro ao carregar passos")).toHaveLength(2);
   });
 
   it("toggles all steps expand/collapse", async () => {
-    render(<StepsContainer steps={mockSteps} />);
+    const manySteps = Array.from({ length: 5 }, (_, i) => ({
+      step: i + 1,
+      name: `Passo ${i + 1}`,
+      formula: `F${i + 1}`,
+      variables: {},
+      result: i + 1.0,
+      unit: `unit${i + 1}`,
+      status: "completed" as const,
+    }));
+    render(<StepsContainer steps={manySteps} />);
 
-    const toggleButton = screen.getByText("Expandir Todos");
+    const toggleButton = screen.getByRole("button", { name: /Expandir Todos|Recolher Todos/ });
+    expect(toggleButton).toHaveTextContent("Expandir Todos");
+
     fireEvent.click(toggleButton);
 
     await waitFor(() => {
-      expect(
-        screen.getByText("Recolher Todos")
-      ).toBeInTheDocument();
+      expect(toggleButton).toHaveTextContent("Recolher Todos");
     });
   });
 

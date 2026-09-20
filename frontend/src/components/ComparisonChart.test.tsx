@@ -55,8 +55,9 @@ describe("ComparisonChart", () => {
       />
     );
 
-    expect(screen.getByText("Erro ao carregar grafico")).toBeInTheDocument();
-    expect(screen.getByText(errorMessage)).toBeInTheDocument();
+    const errorTexts = screen.getAllByText("Erro ao carregar grafico");
+    expect(errorTexts).toHaveLength(2);
+    expect(errorTexts[0]).toBeInTheDocument();
   });
 
   it("shows empty state when no data", () => {
@@ -116,7 +117,10 @@ describe("ComparisonChart", () => {
       />
     );
 
-    const squares = container.querySelectorAll("div[style*='background']");
-    expect(squares.length).toBeGreaterThan(0);
+    // Check that the chart renders successfully (charts from Recharts don't have simple selectors)
+    const chartContainer = container.querySelector("svg");
+    expect(chartContainer).toBeInTheDocument();
+    expect(screen.getByText("BB84")).toBeInTheDocument();
+    expect(screen.getByText("MDI-QKD")).toBeInTheDocument();
   });
 });

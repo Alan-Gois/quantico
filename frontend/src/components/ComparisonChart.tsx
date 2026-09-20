@@ -1,4 +1,4 @@
-import React from "react";
+import React, { ReactNode } from "react";
 import {
   BarChart,
   Bar,
@@ -95,7 +95,7 @@ const ComparisonChart: React.FC<ComparisonChartProps> = ({
               borderRadius: "8px",
               padding: "12px",
             }}
-            formatter={(value: unknown) => {
+            formatter={(value: number | string): ReactNode => {
               if (typeof value === "number") {
                 return value.toFixed(2);
               }

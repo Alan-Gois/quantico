@@ -63,7 +63,7 @@ describe("StepByStepDashboard", () => {
     fireEvent.click(mdiTab);
 
     await waitFor(() => {
-      expect(mdiTab.parentElement).toHaveClass("text-purple-600");
+      expect(mdiTab).toHaveClass("text-purple-600");
     });
   });
 

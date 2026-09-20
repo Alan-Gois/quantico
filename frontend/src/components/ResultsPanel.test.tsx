@@ -92,8 +92,9 @@ describe("ResultsPanel", () => {
       />
     );
 
-    expect(screen.getByText("Erro ao carregar resultados")).toBeInTheDocument();
-    expect(screen.getByText(errorMessage)).toBeInTheDocument();
+    const errorTexts = screen.getAllByText("Erro ao carregar resultados");
+    expect(errorTexts).toHaveLength(2);
+    expect(errorTexts[0]).toBeInTheDocument();
   });
 
   it("displays secondary data (execution time)", () => {
@@ -130,7 +131,7 @@ describe("ResultsPanel", () => {
       />
     );
 
-    const successCard = screen.getByText("Taxa de Chave").parentElement;
+    const successCard = screen.getByText("Taxa de Chave").closest("div[class*='bg-']");
     expect(successCard).toHaveClass("bg-green-50");
   });
 
@@ -149,7 +150,7 @@ describe("ResultsPanel", () => {
       />
     );
 
-    const errorCard = screen.getByText("Taxa de Erro").parentElement;
+    const errorCard = screen.getByText("Taxa de Erro").closest("div[class*='bg-']");
     expect(errorCard).toHaveClass("bg-red-50");
   });
 

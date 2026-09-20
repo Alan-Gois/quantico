@@ -16,6 +16,14 @@ declare global {
     target: Element;
     contentRect: DOMRectReadOnly;
   }
+
+  interface ImportMeta {
+    env: {
+      VITE_API_URL?: string;
+      MODE?: string;
+      [key: string]: string | undefined;
+    };
+  }
 }
 
 export {};

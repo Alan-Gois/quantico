@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useMemo } from "react";
 import { useStepByStepSimulation } from "../hooks/useStepByStepSimulation";
-import { StepByStepSimulationParams } from "../types/stepbystep";
+import { StepByStepSimulationParams, ResultMetric } from "../types/stepbystep";
 import ParametersPanel from "../components/ParametersPanel";
 import StepsContainer from "../components/StepsContainer";
 import ResultsPanel from "../components/ResultsPanel";

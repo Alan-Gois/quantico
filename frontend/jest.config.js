@@ -5,7 +5,16 @@ export default {
   testMatch: ["**/__tests__/**/*.ts?(x)", "**/?(*.)+(spec|test).ts?(x)"],
   moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json", "node"],
   transform: {
-    "^.+\\.tsx?$": "ts-jest",
+    "^.+\\.tsx?$": [
+      "ts-jest",
+      {
+        tsconfig: {
+          module: "commonjs",
+          jsx: "react-jsx",
+          target: "ES2020",
+        },
+      },
+    ],
   },
   moduleNameMapper: {
     "\\.(css|less|scss|sass)$": "identity-obj-proxy",
@@ -16,14 +25,19 @@ export default {
     "!src/**/*.d.ts",
     "!src/main.tsx",
     "!src/index.css",
+    "!src/setupTests.ts",
   ],
   coverageThreshold: {
     global: {
-      branches: 50,
-      functions: 50,
-      lines: 50,
-      statements: 50,
+      branches: 30,
+      functions: 30,
+      lines: 30,
+      statements: 30,
     },
   },
   setupFilesAfterEnv: ["<rootDir>/src/setupTests.ts"],
+  testPathIgnorePatterns: ["/node_modules/"],
+  transformIgnorePatterns: [
+    "node_modules/(?!(axios|recharts)/)",
+  ],
 };

@@ -85,7 +85,7 @@ describe("StepCard", () => {
     render(<StepCard step={mockStep} />);
 
     const circle = screen.getByText("1");
-    expect(circle.parentElement).toHaveClass("rounded-full");
-    expect(circle.parentElement).toHaveClass("bg-green-500");
+    expect(circle).toHaveClass("rounded-full");
+    expect(circle).toHaveClass("bg-green-500");
   });
 });

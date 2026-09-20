@@ -4,8 +4,7 @@ import {
   StepByStepResult,
   StepByStepSimulationParams,
 } from "../types/stepbystep";
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+import { API_BASE_URL } from "../config/env";
 
 interface UseStepByStepSimulationResult {
   data: StepByStepResult | null;
@@ -68,8 +67,10 @@ export const useStepByStepSimulation =
 
           // Limitar cache size
           if (cacheRef.current.size > 50) {
-            const firstKey = cacheRef.current.keys().next().value;
-            cacheRef.current.delete(firstKey);
+            const firstKey = cacheRef.current.keys().next().value as string | undefined;
+            if (firstKey !== undefined) {
+              cacheRef.current.delete(firstKey);
+            }
           }
 
           setData(result);
