@@ -1,0 +1,136 @@
+=== UA1_UA2_BB84_v2.docx ===
+
+P3: SENAI CIMATEC
+P4: Pós-graduação Lato Sensu
+P5: Especialização em Comunicação Quântica
+P6: Disciplina: Pós Processamento em Distribuição de Chaves Quânticas
+P7: Professor: Carlos Daniel Fontes da Silva
+P8: Projeto de Sistema de QKD – BB84
+P9: Modelagem, Simulação e Análise de Desempenho
+P10: 2026
+P12: Projeto de Sistema de QKD – BB84
+P13: Modelagem, Simulação e Análise de Desempenho
+P14: AUTORES
+P15: ALAN SOUSA GOIS
+P16: ALEXANDRE FAHL TEBERGA
+P17: NATHALIA PRISCILA LINS DE ASSUNÇÃO
+P18: THIAGO DUARTE DE PAULA
+P19: VÂNIA REGINA CASAGRANDE
+P20: SUMÁRIO
+P22: 1. Introdução	3
+P23: 2. Fundamentação Teórica e Modelagem do Sistema	3
+P24: 2.1. O Protocolo BB84 e a Arquitetura do Sistema	3
+P25: 2.2. Variáveis do Sistema e Parâmetros Físicos Associados	3
+P26: 2.3. Relação entre Variáveis e Dispositivos Físicos	4
+P27: 2.4. Otimização da Janela de Detecção	5
+P28: 2.5. Equacionamento Matemático (Taxas e QBER)	5
+P29: 3. Metodologia de Simulação	5
+P30: 3.1. Condições de Contorno e Parâmetros Fixos	5
+P31: 3.2. Parâmetros Livres e Critério de Segurança (PNS)	6
+P32: 4. Resultados Obtidos	6
+P33: 4.1. Tabela de Resultados da Simulação	6
+P34: 4.2. Análise Gráfica	7
+P35: 5. Análise Crítica dos Resultados (Fatores Limitantes)	7
+P36: 6. Conclusões	8
+P37: 7. Referências Bibliográficas	8
+P40: 1. Introdução
+P41: A Distribuição Quântica de Chaves (Quantum Key Distribution — QKD) baseada no protocolo BB84 utiliza propriedades fundamentais da mecânica quântica para estabelecer chaves criptográficas com segurança incondicional, isto é, uma segurança que não depende da capacidade computacional de um eventual espião. Em implementações práticas, no entanto, as imperfeições inerentes aos componentes de hardware — atenuação da fibra óptica, ruído nos detectores, eficiência quântica finita, entre outras — impõem limites físicos claros à distância e à taxa de geração de chaves que o sistema pode sustentar com segurança.
+P42: Este relatório tem como objetivo projetar, modelar e simular um sistema de QKD baseado no protocolo BB84, equilibrando a segurança contra ataques de interceptação — em especial o ataque de divisão de fótons múltiplos (Photon-Number Splitting, PNS) — com as limitações reais dos componentes ópticos e eletrônicos fornecidos, de modo a maximizar a taxa de geração de chaves secretas dentro de uma margem de erro admissível.
+P43: Para isso, o trabalho está organizado da seguinte forma: a Seção 2 apresenta a fundamentação teórica do protocolo, a arquitetura do sistema, as variáveis relevantes e o equacionamento utilizado; a Seção 3 descreve a metodologia de simulação e os parâmetros de hardware considerados; a Seção 4 apresenta os resultados obtidos por meio de tabelas e gráficos; a Seção 5 discute criticamente os fatores que limitam o desempenho do sistema; e a Seção 6 sintetiza as conclusões do trabalho.
+P44: 2. Fundamentação Teórica e Modelagem do Sistema
+P45: 2.1. O Protocolo BB84 e a Arquitetura do Sistema
+P46: O protocolo BB84 baseia-se na preparação e na medição de fótons únicos em bases de polarização não ortogonais. Na arquitetura proposta, Alice utiliza um Gerador Quântico de Números Aleatórios (QRNG) para selecionar aleatoriamente os bits e as bases de polarização a serem codificadas. Em seguida, os drivers eletrônicos acionam o laser (LD) e o Modulador de Amplitude (AM) para gerar os pulsos ópticos correspondentes, os quais têm sua intensidade ajustada pelo Atenuador Óptico Variável (VOA) e sua polarização definida por um Controlador de Polarização (PC).
+P47: Após a transmissão pelo canal óptico (fibra), Bob emprega um segundo QRNG para escolher aleatoriamente a sua base de medição e utiliza um Beamsplitter de Polarização (PBS), seguido de detectores de fóton único (Det 0 e Det 1), para registrar os eventos de chegada. As escolhas de base de Alice e Bob são, então, comparadas publicamente por meio de um canal clássico autenticado: quando coincidem, os bits são mantidos; quando não coincidem, são descartados. O resultado desse processo de peneiramento (sifting) é a chave bruta compartilhada, que posteriormente passa por correção de erros e amplificação de privacidade até se tornar a chave secreta final.
+P48: 2.2. Variáveis do Sistema e Parâmetros Físicos Associados
+P49: As seis variáveis a seguir determinam integralmente o desempenho do sistema simulado, tanto em termos de taxa de geração de chaves quanto de taxa de erro quântico:
+P51: 2.3. Relação entre Variáveis e Dispositivos Físicos
+P52: Cada variável do modelo matemático corresponde a um parâmetro físico mensurável de um dos cinco dispositivos que compõem o arranjo experimental (ilustrado no material de apoio da disciplina): o laser (LD), o Modulador de Amplitude (AM), o Atenuador Óptico Variável (VOA), o Beamsplitter de Polarização (PBS) e os detectores de fóton único (Det). A tabela a seguir consolida essa correspondência:
+P54: Observação: o Controlador de Polarização (PC), com perda de inserção de 3 dB, também compõe o arranjo físico, contribuindo para o orçamento de perdas do enlace, mas não introduz uma variável independente adicional ao modelo — seu efeito já está refletido na transmissividade efetiva do sistema.
+P55: 2.4. Otimização da Janela de Detecção
+P56: A taxa de dark counts (P_dark) afeta criticamente a Taxa de Erro Quântico (QBER). Como a especificação do fabricante fornece um ruído de 10⁻⁵ por nanossegundo de janela de detecção, e os pulsos do driver do AM possuem 10 ns de largura, a relação ótima exige que a janela de detecção de Bob coincida exatamente com a largura do pulso de Alice. Configurou-se, portanto, a janela de detecção em exatos 10 ns: janelas mais longas absorveriam ruído desnecessário (aumentando P_dark sem qualquer ganho de sinal), enquanto janelas mais estreitas cortariam fótons de sinal válidos, reduzindo η efetivamente. Esse ajuste resulta em P_dark = 10⁻⁴ por janela de detecção.
+P57: 2.5. Equacionamento Matemático (Taxas e QBER)
+P58: O modelo matemático do sistema foi implementado e automatizado com base nas seguintes equações, consolidadas a partir da literatura de QKD:
+P59: R_sift = 0,5 · f_rep · μ · t_link · η
+P60: Equação 1 — Taxa de chaves bruta (sifted key rate).
+P61: QBER = P_opt + P_dark / (t_link · η · μ)
+P62: Equação 2 — Taxa de erro quântico, com P_opt = 10^(−ER_PBS/10) e P_dark = 10⁻⁵/ns × largura da janela.
+P63: R_secret = R_sift · [1 − 2·h(QBER)]
+P64: Equação 3 — Taxa de chave secreta, com h(x) = −x·log₂(x) − (1−x)·log₂(1−x) sendo a entropia binária de Shannon.
+P65: 3. Metodologia de Simulação
+P66: O modelo matemático descrito na Seção 2 foi implementado em um script em Python, permitindo o cálculo automatizado de R_sift, QBER e R_secret para diferentes distâncias do enlace de fibra óptica.
+P67: 3.1. Condições de Contorno e Parâmetros Fixos
+P68: Os seguintes parâmetros de hardware, especificados para os componentes do sistema, foram fixados ao longo de toda a simulação:
+P70: 3.2. Parâmetros Livres e Critério de Segurança (PNS)
+P71: O comprimento da fibra óptica (L) e a atenuação do VOA (que determina μ) foram definidos como os parâmetros livres da simulação. O algoritmo varreu o comprimento do enlace de 0 km até o limite crítico de falha do sistema. Para garantir segurança incondicional contra ataques do tipo Photon-Number Splitting (PNS), o valor de atenuação do VOA foi ajustado dinamicamente a cada quilômetro, respeitando rigidamente a condição:
+P72: μ = k_seg · 2 · t_link,  com k_seg = 0,99
+P73: Essa condição garante que o número médio de fótons emitido por Alice seja sempre atenuado na mesma proporção da transmissividade do canal, impedindo que um eventual espião extraia informação útil de pulsos que porventura contenham mais de um fóton. Observa-se que o critério do roteiro exige desigualdade estrita (μ inferior, e não igual, a 2·t_link); usar μ = 2·t_link exatamente deixaria o sistema no limite da restrição de segurança. Por isso adotou-se uma margem de segurança de 1% (k_seg = 0,99), garantindo μ sempre estritamente abaixo do limite crítico sem penalizar de forma perceptível a taxa de chaves.
+P74: 4. Resultados Obtidos
+P75: 4.1. Tabela de Resultados da Simulação
+P76: A simulação demonstrou que o sistema BB84, com o hardware especificado e a margem de segurança anti-PNS (k_seg = 0,99), atinge seu limite de viabilidade na marca de 58 km de fibra óptica. Nesse ponto, a QBER atinge 9,50%, muito próxima do limite admissível de 10%, no qual o excesso de correção de erros anula a geração de uma chave secreta viável e segura.
+P78: Memória de Cálculo — Substituição Numérica (Exemplo Ilustrativo)
+P79: Para tornar explícito o caminho até cada resultado da Tabela 4.1 — e não apenas o valor final — apresenta-se a seguir a substituição numérica completa para o ponto L = 30 km (caso intermediário), seguindo estritamente as equações da Seção 3. O ponto L = 0 km (melhor caso) é desenvolvido da mesma forma na aba “Memoria_Calculo” da planilha de apoio, onde todos os valores de “Resultado” são fórmulas vivas ligadas à aba Simulacao (recalculam automaticamente caso os parâmetros de hardware sejam alterados).
+P81: Os demais pontos da Tabela 4.1 (L = 10, 20, 40, 50, 55 e 58 km) seguem exatamente a mesma sequência de substituição — apenas a atenuação A(L) muda em função da distância — e estão totalmente auditáveis na planilha de apoio (aba Simulacao), célula a célula.
+P82: 4.2. Análise Gráfica
+P83: O dashboard a seguir consolida os principais indicadores de desempenho do sistema BB84 e dois gráficos de acompanhamento: a evolução da QBER em função da distância do enlace (crescimento suave até aproximadamente 40 km, seguido por uma elevação acentuada nos últimos quilômetros simulados, à medida que o sinal atenuado se aproxima do piso de ruído dos detectores) e a taxa de chave secreta (R_secret) em escala logarítmica, evidenciando o decaimento de mais de três ordens de grandeza entre 0 km e 58 km:
+P86: Figura 1 — Dashboard de desempenho do sistema BB84: indicadores-chave, evolução da QBER e da taxa de chave secreta (R_secret) em função da distância do enlace.
+P87: 5. Análise Crítica dos Resultados (Fatores Limitantes)
+P88: Impacto das perdas inerentes: os atenuadores e moduladores introduzem uma perda severa já na fonte de Alice. Como o sinal entra na fibra fraco, o critério de segurança contra PNS exige que o VOA o atenue para níveis subfóton cada vez mais severos (μ inferior a 0,2 fóton/pulso a partir de aproximadamente 46 km), derrubando a taxa de bits úteis gerados (R_sift).
+P89: O peso do ruído (P_dark): a probabilidade de dark counts foi o fator crucial de restrição do sistema. Como a atenuação da fibra (0,22 dB/km) faz a potência do sinal legítimo decair exponencialmente, os cliques de ruído permanecem constantes (10⁻⁴ por janela de medição). Aos 58 km, esses cliques falsos se equiparam gradualmente às detecções genuínas, elevando perigosamente a QBER.
+P90: Efeito do PBS: a razão de extinção de 23 dB do beamsplitter atua como um piso de erro constante. Ela cria um erro óptico estacionário (P_opt) de aproximadamente 0,5%, o que garante que, mesmo sem atenuação de fibra (L = 0 km), o sistema não opera de forma impecável (QBER de 0,53%, e não 0%).
+P91: Em conjunto, esses três fatores explicam por que o alcance do sistema, com o hardware especificado, está limitado a 58 km: a combinação de sinal decrescente, ruído constante e um piso de erro intrínseco converge para o limite admissível de QBER exatamente nessa distância.
+P92: 6. Conclusões
+P93: O projeto do sistema QKD BB84 confirmou que é possível estabelecer uma arquitetura prática respeitando exigências de segurança, como a proteção contra o ataque PNS. Por meio do equacionamento e da simulação numérica, determinou-se que o hardware especificado possui alcance máximo de 58 km, produzindo uma taxa de chaves secretas de aproximadamente 2,6 kbps (2.609,45 bps) ao atingir uma QBER de 9,50%.
+P94: A análise crítica evidenciou que o fator limitante dominante em longas distâncias é o ruído dos detectores (dark counts), cujo valor absoluto constante passa a competir com um sinal cada vez mais atenuado. Para viabilizar distâncias mais longas sob a mesma arquitetura, seria indispensável reduzir expressivamente os dark counts, por meio de detectores resfriados ou de tecnologias de nanofios supercondutores (Superconducting Nanowire Single-Photon Detectors — SNSPD), que apresentam ruído substancialmente menor do que os detectores convencionais considerados neste trabalho.
+P95: 7. Referências Bibliográficas
+P96: BENNETT, C. H.; BRASSARD, G. Quantum cryptography: Public key distribution and coin tossing. In: PROCEEDINGS OF IEEE INTERNATIONAL CONFERENCE ON COMPUTERS, SYSTEMS AND SIGNAL PROCESSING, 1984, Bangalore. Proceedings. Bangalore: IEEE, 1984. p. 175-179.
+P97: GISIN, N.; RIBORDY, G.; TITTEL, W.; ZBINDEN, H. Quantum Cryptography. arXiv preprint, quant-ph/0101098, 2001. Disponível em: https://arxiv.org/abs/quant-ph/0101098. Acesso em: 17 jul. 2026.
+P98: SCARANI, V. et al. The Security of Practical Quantum Key Distribution. Reviews of Modern Physics, v. 81, n. 3, p. 1301-1350, 2009.
+
+=== TABLES ===
+
+--- TABLE 0 ---
+Variável | Significado | Efeito na taxa de chave secreta
+f_rep | Frequência de repetição dos pulsos ópticos (taxa do driver do AM). | Impacta linearmente a taxa bruta de envio de qubits (R_sift); quanto maior f_rep, maior o número de tentativas de chave por segundo.
+μ (mu) | Número médio de fótons por pulso emitido por Alice. | Aumenta R_sift, mas valores elevados comprometem a segurança contra PNS; por isso é continuamente ajustado em função de t_link.
+t_link | Transmissividade do canal óptico — fração de fótons que sobrevive ao percurso na fibra. | Decai exponencialmente com a distância, reduzindo diretamente R_sift e amplificando o peso relativo do ruído na QBER.
+P_opt | Probabilidade de erro óptico intrínseco, gerada por desalinhamentos e pela extinção finita do PBS. | Estabelece um piso mínimo de QBER, presente mesmo a distância zero, independente do enlace.
+P_dark | Probabilidade de contagens falsas (dark counts) nos detectores dentro da janela de detecção. | Permanece constante em valor absoluto enquanto o sinal decai com a distância, tornando-se o fator dominante da QBER em longos enlaces.
+η (eta) | Eficiência quântica dos detectores de fóton único. | Reduz proporcionalmente R_sift e amplifica o peso relativo de P_dark na QBER, já que menos fótons de sinal são efetivamente registrados.
+
+--- TABLE 1 ---
+Dispositivo | Parâmetro físico especificado | Papel no modelo / variável associada
+LD (Laser) | Potência óptica de 1 mW em 1550 nm. | Fornece a intensidade de referência que será atenuada até o regime de fóton único, base para o ajuste de μ.
+AM (Modulador) | Frequência de 50 MHz; pulsos de 10 ns; perda de inserção de 3 dB. | Define diretamente f_rep e a largura do pulso, usada na otimização da janela de detecção.
+VOA | Atenuação ajustável dinamicamente a cada quilômetro do enlace. | Controla μ, mantendo a relação μ = 2·t_link exigida pelo critério de segurança contra PNS.
+PBS | Razão de extinção de 23 dB. | Determina P_opt (≈ 0,501%), o piso de erro óptico intrínseco do sistema.
+Det (Detectores) | Eficiência quântica η de 20%; ruído de 10⁻⁵ por ns. | Define η e, combinado à largura da janela de detecção, define P_dark.
+
+--- TABLE 2 ---
+Componente | Especificação
+Laser (LD) | 1 mW em 1550 nm.
+Modulador (AM) | Frequência de 50 MHz; pulsos de 10 ns; perda de inserção de 3 dB.
+Fibra óptica | Atenuação de 0,22 dB/km (em 1550 nm); dispersão desprezada.
+Detectores | Eficiência quântica (η) de 20%; ruído de 10⁻⁵ por ns (P_dark = 10⁻⁴ por janela de 10 ns).
+PBS | Razão de extinção de 23 dB (P_opt = 0,00501).
+Controlador de Polarização (PC) | Perda de inserção de 3 dB.
+
+--- TABLE 3 ---
+Distância (km) | Atenuação da fibra (dB) | t_link | μ (fótons/pulso) | QBER (%) | Taxa secreta (bps)
+0 | 0,00 | 1,000000 | 1,980000 | 0,53 | 8.961.008,07
+10 | 2,20 | 0,602560 | 1,193068 | 0,57 | 3.229.652,80
+20 | 4,40 | 0,363078 | 0,718895 | 0,69 | 1.149.369,83
+30 | 6,60 | 0,218776 | 0,433177 | 1,03 | 395.474,23
+40 | 8,80 | 0,131826 | 0,261015 | 1,95 | 124.259,98
+50 | 11,00 | 0,079433 | 0,157277 | 4,50 | 29.368,85
+55 | 12,10 | 0,061660 | 0,122086 | 7,14 | 9.692,14
+58 | 12,76 | 0,052966 | 0,104873 | 9,50 | 2.609,45
+
+--- TABLE 4 ---
+Grandeza / Fórmula | Substituição numérica e resultado
+Atenuação: A(L) = L · α | A(30) = 30 × 0,22 = 6,6000 dB
+Transmissividade: t_link = 10^(−A/10) | t_link = 10^(−6,6000/10) = 0,218776
+Intensidade média: μ = k_seg·2·t_link | μ = 0,99 × 2 × 0,218776 = 0,433177  (< 2·t_link = 0,437552 — restrição PNS satisfeita)
+QBER = P_opt + P_dark/(t_link·η·μ) | QBER = 0,005012 + 0,0001/(0,218776×0,20×0,433177) = 1,0288 %
+Entropia binária: h(QBER) | h(0,010288) = 0,082696
+Taxa bruta: R_sift = 0,5·f_rep·μ·t_link·η | R_sift = 0,5 × 5×10⁷ × 0,433177 × 0,218776 × 0,20 = 473.844 bps
+Taxa secreta: R_secret = R_sift·(1−2h) | R_secret = 473.844 × (1 − 2×0,082696) = 395.474 bps

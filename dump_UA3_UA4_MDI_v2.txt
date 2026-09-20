@@ -1,0 +1,136 @@
+=== UA3_UA4_MDI_v2.docx ===
+
+P3: SENAI CIMATEC
+P4: Pós-graduação Lato Sensu
+P5: Especialização em Comunicação Quântica
+P6: Disciplina: Pós Processamento em Distribuição de Chaves Quânticas
+P7: Professor: Carlos Daniel Fontes da Silva
+P8: Projeto de Sistema de MDI-QKD
+P9: Arquitetura, Simulação e Comparativo de Desempenho
+P10: 2026
+P12: Projeto de Sistema de MDI-QKD
+P13: Arquitetura, Simulação e Comparativo de Desempenho
+P14: AUTORES
+P15: ALAN SOUSA GOIS
+P16: ALEXANDRE FAHL TEBERGA
+P17: NATHALIA PRISCILA LINS DE ASSUNÇÃO
+P18: THIAGO DUARTE DE PAULA
+P19: VÂNIA REGINA CASAGRANDE
+P20: SUMÁRIO
+P22: 1. Objetivo e Descrição do Sistema MDI-QKD	3
+P23: 2. Modelo Matemático e Arquitetura do Sistema	3
+P24: 2.1. Mapeamento das Variáveis e Componentes Ópticos	3
+P25: 2.2. O Papel do Gerador Quântico de Números Aleatórios (QRNG)	4
+P26: 2.3. Medição de Estado de Bell (BSM) em Charlie	5
+P27: 2.4. Integração de Memórias Quânticas	6
+P28: 2.5. Equacionamento Matemático (Decoy States, QBER e Taxas)	6
+P29: 3. Metodologia de Simulação e Condições de Contorno	7
+P30: 4. Resultados Obtidos	7
+P31: 4.1. Tabela de Resultados da Simulação	7
+P32: 4.2. Comparativo de Desempenho: MDI-QKD vs. BB84	8
+P33: 5. Análise dos Fatores Limitantes	9
+P34: 6. Considerações Finais	10
+P35: 7. Referências Bibliográficas	10
+P38: 1. Objetivo e Descrição do Sistema MDI-QKD
+P39: O presente relatório tem como objetivo projetar e analisar o desempenho de um sistema de Distribuição Quântica de Chaves Independente do Dispositivo de Medição (Measurement-Device-Independent QKD — MDI-QKD). Diferentemente do protocolo BB84, no qual Bob detecta diretamente os fótons recebidos, o MDI-QKD desloca a etapa de medição para um nó intermediário não confiável, denominado Charlie, que pode inclusive estar sob controle de um espião sem que a segurança do protocolo seja comprometida.
+P40: Essa mudança de arquitetura elimina, por construção, toda a classe de ataques que exploram vulnerabilidades físicas dos detectores (ataques do tipo hacking de detectores), uma vez que nem Alice nem Bob dependem de seus próprios detectores para formar a chave. O projeto aborda a seleção dos componentes ópticos envolvidos, a implementação da técnica de estados isca (decoy states) — necessária porque Alice e Bob agora enviam pulsos através de um canal cuja estatística de chegada é definida por terceiros — a escolha e a relevância dos Geradores Quânticos de Números Aleatórios (QRNGs) e a integração teórica de memórias quânticas, visando maximizar o alcance e a taxa de chaves secretas geradas pelo sistema.
+P41: 2. Modelo Matemático e Arquitetura do Sistema
+P42: 2.1. Mapeamento das Variáveis e Componentes Ópticos
+P43: As mesmas seis variáveis físicas do modelo BB84 continuam presentes no MDI-QKD, porém assumem papéis distintos em função da nova arquitetura, que passa a contar com dois braços simétricos (Alice–Charlie e Bob–Charlie) e um nó de medição não confiável:
+P45: Componentes ópticos envolvidos: os parâmetros acima estão fisicamente ligados ao laser (LD) e ao Modulador de Amplitude (AM) de cada extremidade (que definem f_rep e a largura de pulso), ao Atenuador Óptico Variável — VOA (que define μ, agora chaveado entre múltiplos níveis), à fibra óptica de cada braço (que define t_link) e, em Charlie, a dois Beamsplitters de Polarização — PBS (que definem P_opt) acoplados a quatro detectores de fóton único — Det 0, Det 1, Det 2 e Det 3 (que definem η e P_dark). A arquitetura, portanto, duplica os componentes de emissão em relação ao BB84, mas concentra a detecção em um único nó intermediário.
+P46: 2.2. O Papel do Gerador Quântico de Números Aleatórios (QRNG)
+P47: No MDI-QKD, Alice e Bob precisam tomar, a cada pulso, duas decisões aleatórias e independentes: a base de medição/preparação (retilínea ou diagonal) e a intensidade a ser utilizada dentre o conjunto de estados isca (μ₁, μ₂ ou μ₃). Um Gerador Quântico de Números Aleatórios (QRNG), fundamentado no princípio da incerteza quântica, é o único tipo de fonte capaz de assegurar entropia genuína e imprevisível para ambas as escolhas — o que é indispensável, já que qualquer previsibilidade poderia ser explorada pela própria estação Charlie (não confiável) ou por um espião passivo no canal para inferir se um pulso é sinal ou isca.
+P48: Duas figuras de mérito são especialmente relevantes na seleção do QRNG para este sistema:
+P49: Taxa de bits aleatórios por segundo: deve ser igual ou superior à demanda combinada de f_rep (50 MHz) para a escolha de base e de intensidade a cada pulso. Como o MDI-QKD exige, por pulso, 1 bit para a base e o equivalente a log₂(3) ≈ 1,58 bit para escolher entre três intensidades, a demanda de entropia por pulso é maior do que no BB84 (que exige apenas 2 bits por pulso). Isso implica uma taxa de geração mínima superior a 150 Mbit/s para acompanhar o driver eletrônico sem introduzir atrasos ou reutilização de números — o que comprometeria a segurança dos decoy states.
+P50: Fidelidade estatística / entropia mínima certificada: a fonte deve possuir entropia mínima (min-entropy) certificada, tipicamente validada por baterias de testes estatísticos (como as da família NIST SP 800-90B), garantindo que a distribuição dos bits gerados seja indistinguível de uma distribuição verdadeiramente uniforme. Essa certificação é crítica no MDI-QKD porque Charlie, o nó que realiza a medição, é justamente a parte não confiável do sistema: qualquer viés residual no QRNG poderia ser explorado por Charlie (ou por quem o controla) para correlacionar as escolhas de intensidade com os resultados de medição, corrompendo a estimativa dos ganhos por decoy state.
+P51: 2.3. Medição de Estado de Bell (BSM) em Charlie
+P52: Charlie recebe simultaneamente os pulsos ópticos vindos de Alice e de Bob e realiza uma Medição de Estado de Bell (Bell State Measurement — BSM) com óptica linear: os dois fótons interferem em um Beamsplitter de Polarização e são encaminhados a quatro detectores de fóton único (Det 0, Det 1, Det 2 e Det 3). A tabela a seguir resume as combinações de coincidência relevantes:
+P54: Com óptica linear, apenas dois dos quatro estados de Bell (|ψ⁻⟩ e |ψ⁺⟩) podem ser identificados de forma inequívoca; os estados |φ⁺⟩ e |φ⁻⟩ não produzem um padrão de coincidência distinguível nesse arranjo. Esse limite estabelece uma eficiência teórica máxima de 50% para a BSM — fator que aparece explicitamente como o coeficiente 0,5 na equação da taxa de chaves bruta (R_sift = 0,5 · f_rep · Q_C), evidenciando a ligação direta entre a limitação física do aparato de medição e o modelo matemático do sistema.
+P55: É importante destacar que essa limitação de completude afeta exclusivamente a taxa (throughput) do protocolo, e não a sua segurança: eventos não projetáveis são simplesmente descartados, sem gerar informação que possa ser explorada por um espião. Já a eficiência quântica finita (η = 20%) dos detectores de Charlie, combinada ao ruído de dark counts, reduz ainda mais a fração de eventos de coincidência genuína detectados e introduz coincidências falsas (ruído em ambos os braços, ou ruído combinado a um fóton de sinal), que se traduzem diretamente em QBER. Dessa forma, tanto a completude teórica da BSM quanto suas limitações experimentais (eficiência finita e ruído) impactam concretamente o desempenho do sistema, conforme discutido na Seção 5.
+P56: 2.4. Integração de Memórias Quânticas
+P57: Em canais de longa distância, a probabilidade de que os dois fótons — um vindo de Alice, outro de Bob — cheguem a Charlie exatamente ao mesmo tempo, com sincronismo de fase e polarização preservado, é extremamente baixa, já que essa probabilidade conjunta escala com o produto das transmissividades de cada braço (t_link²). A integração de memórias quânticas em Charlie reverte esse cenário: ao anunciar publicamente a chegada bem-sucedida de um fóton em um dos braços, o fóton correspondente pode ser armazenado até que o segundo braço também tenha sucesso, disparando a BSM apenas quando ambos os qubits estiverem simultaneamente disponíveis.
+P58: Esse mecanismo de sincronização assistida por memória converte o escalonamento da taxa útil de O(t_link²) para O(t_link), um ganho assintótico expressivo em distâncias maiores, pois passa a depender apenas da menor das duas transmissividades, e não do produto de ambas. Contudo, para que esse ganho se realize na prática, a memória quântica precisa satisfazer requisitos rigorosos de hardware: um tempo de coerência superior à diferença máxima de latência entre os dois braços (caso contrário o estado armazenado decai antes do segundo fóton chegar), uma eficiência de armazenamento (escrita e leitura) próxima da unidade, para não introduzir perdas adicionais que anulariam o próprio ganho de taxa, e uma fidelidade extremamente alta na recuperação do estado, uma vez que qualquer degradação do estado armazenado se traduz diretamente em aumento da QBER medida por Charlie. Ou seja, a contribuição das memórias quânticas para o aumento da taxa de chaves secretas está diretamente condicionada ao cumprimento simultâneo desses três requisitos de desempenho de hardware.
+P59: 2.5. Equacionamento Matemático (Decoy States, QBER e Taxas)
+P60: Com a técnica de decoy states, o modelo analítico adotado para a simulação é definido pelas seguintes expressões, relacionando diretamente os parâmetros físicos do sistema (η, t_link, μ, P_dark, P_opt) às grandezas de desempenho do protocolo:
+P61: Q_C ∝ (η · t_link · μ)²
+P62: Equação 1 — Ganho de coincidências em Charlie: escala com o quadrado do produto eficiência–transmissividade–intensidade, pois exige detecção simultânea nos dois braços.
+P63: e_C ≈ P_opt + (P_dark · η · t_link · μ) / Q_C
+P64: Equação 2 — QBER de Charlie: soma o erro óptico intrínseco do PBS (P_opt) à fração de coincidências falsas geradas por dark counts em relação ao ganho total de coincidências.
+P65: R_sift = 0,5 · f_rep · Q_C
+P66: Equação 3 — Taxa de chaves bruta, em que o fator 0,5 reflete diretamente a eficiência teórica máxima de 50% da BSM com óptica linear.
+P67: R_secret = R_sift · [1 − 2·h(e_C)]
+P68: Equação 4 — Taxa de chave secreta, com h(x) a entropia binária de Shannon, aplicada de forma análoga ao modelo BB84 (fatores de peneiramento de base desprezados para fins de simulação).
+P69: 3. Metodologia de Simulação e Condições de Contorno
+P70: O modelo apresentado na Seção 2 foi implementado em um script em Python, permitindo o cálculo automatizado de Q_C, e_C e R_secret para diferentes distâncias do enlace. Foram adotados os seguintes parâmetros de hardware, mantidos fixos ao longo de toda a simulação:
+P72: O parâmetro livre da simulação foi o comprimento L de cada braço (Alice–Charlie e, simetricamente, Bob–Charlie). Como a técnica de decoy states dispensa a necessidade de atenuar continuamente o sinal para conter o ataque PNS, adotou-se uma intensidade de sinal moderada e fixa de μ = 0,5 ao longo de toda a varredura — valor consideravelmente mais alto do que os μ subfóton empregados no BB84 em distâncias equivalentes. O comprimento L foi variado livremente a partir de 0 km até o ponto em que a QBER excedesse o limite admissível de 10%, mesmo critério de corte utilizado no Projeto 1 (BB84), garantindo comparabilidade entre os dois sistemas.
+P73: 4. Resultados Obtidos
+P74: 4.1. Tabela de Resultados da Simulação
+P75: A simulação foi executada desde 0 km até o limite de operação do sistema. Com o hardware especificado e μ = 0,5, o sistema MDI-QKD manteve a QBER (e_C) abaixo do limite de 10% até 89 km por braço (178 km de distância total entre Alice e Bob), como resume a tabela a seguir:
+P77: Memória de Cálculo — Substituição Numérica (Exemplo Ilustrativo)
+P78: Para tornar explícito o caminho até cada resultado da Tabela 4.1 — e não apenas o valor final — apresenta-se a seguir a substituição numérica completa para o ponto L_braço = 40 km (L total = 80 km), seguindo estritamente as equações da Seção 2.5. O ponto L_braço = 0 km (melhor caso) é desenvolvido da mesma forma na aba “Memoria_Calculo” da planilha de apoio, onde todos os valores de “Resultado” são fórmulas vivas ligadas à aba Simulacao (recalculam automaticamente caso os parâmetros de hardware sejam alterados).
+P80: Os demais pontos da Tabela 4.1 (L_braço = 10, 20, 30, 50, 60, 70, 80 e 89 km) seguem exatamente a mesma sequência de substituição — apenas a atenuação por braço A(L_braço) muda em função da distância — e estão totalmente auditáveis na planilha de apoio (aba Simulacao), célula a célula.
+P81: O dashboard a seguir consolida os principais indicadores de desempenho do sistema MDI-QKD e dois gráficos de acompanhamento: a evolução da QBER (e_C) e a taxa de chave secreta (R_secret) em escala logarítmica, ambas em função da distância total do enlace Alice–Bob:
+P90: Figura 1 — Dashboard de desempenho do sistema MDI-QKD: indicadores-chave, evolução da QBER (e_C) e da taxa de chave secreta (R_secret) em função da distância total do enlace.
+P91: 4.2. Comparativo de Desempenho: MDI-QKD vs. BB84
+P92: No Projeto 1, o sistema BB84 operou de forma viável até 58 km absolutos de fibra, ponto em que a QBER atingiu 9,50%. Já o MDI-QKD, com decoy states e um nível de emissão moderado (μ = 0,5) — que não é penalizado por ataques PNS graças à técnica de estados isca — expandiu a distância total viável para 178 km entre Alice e Bob (89 km por braço), mantendo a QBER (e_C) em 9,58% nesse limite. O dashboard comparativo a seguir sobrepõe os resultados dos dois protocolos em função da mesma grandeza física: a distância total entre Alice e Bob.
+P96: Figura 2 — Dashboard comparativo MDI-QKD vs. BB84: indicadores-chave e sobreposição de QBER e taxa de chave secreta (R_secret, escala log) em função da distância total.
+P97: Observa-se que, em distâncias curtas (até cerca de 40 km), o BB84 apresenta taxa de chave secreta substancialmente maior do que o MDI-QKD — o que é esperado, já que o MDI-QKD exige a coincidência simultânea de dois fótons em Charlie, penalizando a taxa bruta logo na origem (223 kbps contra quase 9 Mbps do BB84 a 0 km). Entretanto, a partir de aproximadamente 50 km, a curva de QBER do BB84 dispara de forma abrupta, enquanto a QBER do MDI-QKD continua crescendo de forma suave e controlada, permitindo que o sistema opere de forma útil até distâncias três vezes maiores. Esse comportamento evidencia o principal ganho da arquitetura MDI-QKD: não uma taxa superior a curta distância, mas um alcance muito mais robusto, sustentado pela imunidade a ataques de detector e pela flexibilidade dos decoy states.
+P98: 5. Análise dos Fatores Limitantes
+P99: Dependência dupla do enlace (escalonamento quadrático): a exigência de detecção simultânea nos dois braços faz o ganho de coincidências Q_C escalar com (t_link)², em vez de t_link como no BB84. Esse efeito de atenuação duplicada é o principal responsável pela taxa bruta reduzida do MDI-QKD em distâncias curtas, visível já na tabela de resultados (223 kbps a 0 km, contra quase 9 Mbps do BB84 no mesmo ponto).
+P100: Ruído dos detectores de Charlie (P_dark): combinado à atenuação de 0,22 dB/km em ambos os braços, o ruído de 10⁻⁵ por ns dos detectores gera coincidências falsas cuja proporção cresce à medida que o sinal genuíno se atenua. É esse efeito, somado ao escalonamento quadrático, que leva a QBER a se aproximar do limite de 10% por volta dos 178 km totais (89 km por braço), inviabilizando distâncias maiores com o hardware atual.
+P101: Extinção finita do PBS (P_opt): assim como no BB84, a razão de extinção de 23 dB do beamsplitter de polarização de Charlie estabelece um piso mínimo de erro óptico (e_C) que está presente mesmo em distâncias curtas, explicando por que a QBER a 0 km (0,60%) já é ligeiramente superior à observada no BB84 no mesmo ponto (0,53%) — a arquitetura de Charlie introduz uma fonte adicional de imperfeição óptica em relação a um receptor único.
+P102: Em conjunto, esses fatores relacionam-se diretamente aos resultados obtidos: o escalonamento quadrático de t_link explica a taxa inicial mais baixa; o ruído constante dos detectores explica a aceleração da QBER em longas distâncias; e a extinção finita do PBS explica o piso de erro observado mesmo a distância nula. É justamente a mitigação do primeiro desses fatores — por meio da integração de memórias quânticas discutida na Seção 2.4 — que representa o caminho mais promissor para estender ainda mais o alcance do sistema MDI-QKD.
+P103: 6. Considerações Finais
+P104: A arquitetura MDI-QKD resolveu uma lacuna central entre a segurança teórica da mecânica quântica e as vulnerabilidades práticas dos equipamentos de detecção: ao deslocar a medição para um nó não confiável, o protocolo elimina qualquer dependência da integridade dos detectores para garantir a segurança da chave. O uso do QRNG para blindar a escolha de base e de intensidade (decoy states) mostrou-se essencial para viabilizar essa arquitetura sem reabrir brechas de segurança, e a simulação confirmou um alcance de 178 km totais, distância consideravelmente superior aos 58 km obtidos com o BB84 no Projeto 1, ainda que à custa de uma taxa de chave menor em distâncias curtas.
+P105: Como discutido na Seção 2.4, a integração de memórias quânticas em Charlie surge como o passo natural de evolução do sistema, capaz de converter o escalonamento quadrático da taxa útil em escalonamento linear, desde que sejam atendidos os requisitos de tempo de coerência, eficiência de armazenamento e fidelidade discutidos neste relatório. Combinando essas duas frentes — deslocamento da confiança para longe do detector e sincronização assistida por memória — o MDI-QKD se consolida como um dos elos mais promissores para a futura Internet Quântica, sobretudo em cenários que exigem enlaces mais longos do que os viáveis com BB84 ponto a ponto.
+P106: 7. Referências Bibliográficas
+P107: ABRUZZO, S.; KAMPERMANN, H.; BRUß, D. Measurement-device-independent quantum key distribution with quantum memories. arXiv preprint, arXiv:1306.3095, 2013. DOI: 10.48550/arXiv.1306.3095. Acesso em: 10 set. 2026.
+P108: LIU, Y. et al. Experimental measurement-device-independent quantum key distribution. arXiv preprint, arXiv:1209.6178, 2012. Disponível em: https://arxiv.org/abs/1209.6178. Acesso em: 10 set. 2026.
+
+=== TABLES ===
+
+--- TABLE 0 ---
+Variável | Papel no MDI-QKD | Diferença em relação ao BB84
+f_rep | Taxa do driver eletrônico (AM) de Alice e de Bob; define a velocidade básica de geração de pares de pulsos que convergem para Charlie. | Mesmo papel do BB84, porém replicado simetricamente nas duas pontas, já que ambas emitem pulsos simultâneos.
+μ | Intensidade média ajustada pelo VOA. Com decoy states, Alice e Bob alternam entre múltiplas intensidades, μ ∈ {μ₁, μ₂, μ₃}, pulso a pulso. | No BB84, μ é único e mantido baixo o tempo todo (μ = 2·t_link) apenas para conter o PNS. No MDI-QKD, μ deixa de ser fixo: os decoy states permitem estimar separadamente o ganho e o erro de cada intensidade, possibilitando o uso de sinais mais intensos sem abrir brecha de segurança.
+t_link | Transmissividade de cada braço até Charlie. | No BB84 há um único trecho de fibra; no MDI-QKD, a atenuação se aplica duas vezes (Alice–Charlie e Bob–Charlie), e a exigência de coincidência simultânea faz a taxa útil escalar com t_link².
+P_opt | Erro óptico intrínseco, associado à razão de extinção finita dos PBS de Charlie. | Mesmo mecanismo físico do BB84 (extinção de 23 dB), porém agora só afeta o resultado quando há coincidência de cliques — passa a compor e_C em vez da QBER direta de um único detector.
+P_dark | Probabilidade de cliques de ruído nos quatro detectores de Charlie. | No BB84, um clique de ruído já conta como erro. No MDI-QKD, o erro depende de coincidências falsas (ruído em ambos os detectores do par, ou ruído combinado com sinal), tornando o efeito de P_dark relativamente menos crítico por evento, mas ainda dominante em longas distâncias.
+η | Eficiência quântica dos detectores de Charlie. | No BB84, η entra linearmente em R_sift. No MDI-QKD, como é necessário detectar dois fótons simultaneamente, η contribui de forma quadrática ao ganho de coincidências Q_C.
+
+--- TABLE 1 ---
+Coincidência observada | Estado de Bell projetado | Resultado para o protocolo
+Clique simultâneo em Det 1 e Det 2 | |ψ⁻⟩ | Evento válido — Charlie anuncia sucesso e identifica qual par de detectores clicou.
+Clique simultâneo em Det 0 e Det 3 | |ψ⁺⟩ | Evento válido — igualmente anunciado, mas exige correção de bit em um dos lados após a reconciliação de bases.
+Qualquer outra combinação (cliques únicos, cliques em detectores da mesma saída, ausência de coincidência) | Não projetável | Evento descartado — não contribui para a chave bruta.
+
+--- TABLE 2 ---
+Componente | Especificação
+Laser (LD) | 1 mW em 1550 nm, em ambas as extremidades (Alice e Bob).
+Modulador (AM) | Frequência de 50 MHz; pulsos de 10 ns; perda de inserção de 3 dB.
+Fibra óptica | Atenuação de 0,22 dB/km; dispersão desprezada; comprimentos rigorosamente simétricos entre Alice–Charlie e Bob–Charlie.
+Detectores (Charlie) | Eficiência quântica (η) de 20%; ruído de 10⁻⁵ por ns (P_dark = 10⁻⁴ por janela de 10 ns).
+PBS (Charlie) | Razão de extinção de 23 dB (P_opt = 0,00501).
+
+--- TABLE 3 ---
+Distância Alice–Charlie (km) | Distância total do enlace (km) | Atenuação por braço (dB) | QBER (%) | Taxa secreta (bps)
+0 | 0 | 0,00 | 0,60 | 223.498,71
+10 | 20 | 2,20 | 0,67 | 80.274,28
+20 | 40 | 4,40 | 0,78 | 28.633,20
+30 | 60 | 6,60 | 0,96 | 10.098,76
+40 | 80 | 8,80 | 1,26 | 3.496,81
+50 | 100 | 11,00 | 1,76 | 1.174,37
+60 | 120 | 13,20 | 2,59 | 374,08
+70 | 140 | 15,40 | 3,97 | 107,78
+80 | 160 | 17,60 | 6,26 | 24,54
+89 | 178 | 19,58 | 9,58 | 2,70
+
+--- TABLE 4 ---
+Grandeza / Fórmula | Substituição numérica e resultado
+Atenuação por braço: A = L_braço · α | A(40) = 40 × 0,22 = 8,8000 dB
+Transmissividade: t_link = 10^(−A/10) | t_link = 10^(−8,8000/10) = 0,131826
+Ganho de coincidências: Q_C = (η·t_link·μ)² | Q_C = (0,20 × 0,131826 × 0,5)² = 0,00017378
+e_C = P_opt + (P_dark·η·t_link·μ)/Q_C | e_C = 0,005012 + (0,0001×0,20×0,131826×0,5)/0,00017378 = 1,2598 %
+Entropia binária: h(e_C) | h(0,012598) = 0,097560
+Taxa bruta: R_sift = 0,5·f_rep·Q_C | R_sift = 0,5 × 5×10⁷ × 0,00017378 = 4.344,50 bps
+Taxa secreta: R_secret = R_sift·(1−2h) | R_secret = 4.344,50 × (1 − 2×0,097560) = 3.496,81 bps
