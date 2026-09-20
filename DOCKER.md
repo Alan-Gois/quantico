@@ -23,7 +23,7 @@ docker-compose up -d
 
 ### Acessar
 
-- **Frontend**: http://localhost:3000
+- **Frontend**: http://localhost:8001
 - **Backend**: http://localhost:8000
 - **API Docs**: http://localhost:8000/docs
 
