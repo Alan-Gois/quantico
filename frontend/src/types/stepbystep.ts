@@ -1,4 +1,4 @@
-import { ProtocolParameters } from "./index";
+
 
 export type StepStatus = "completed" | "error";
 
@@ -30,10 +30,9 @@ export interface SweepStepByStepResult {
   aggregated_statistics: Record<string, Record<string, number>>;
 }
 
-export interface StepByStepSimulationParams extends ProtocolParameters {
+export interface StepByStepSimulationParams extends Record<string, number> {
   distance_km: number;
-  error_rate: number;
-  efficiency: number;
+
 }
 
 export interface StepPanelConfig {

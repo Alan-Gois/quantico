@@ -12,7 +12,8 @@ const StepCard: React.FC<StepCardProps> = ({
   isCollapsed = false,
   onToggle,
 }) => {
-  const [expanded, setExpanded] = useState(!isCollapsed);
+  const [localExpanded, setExpanded] = useState(!isCollapsed);
+  const expanded = onToggle ? !isCollapsed : localExpanded;
 
   const handleToggle = () => {
     setExpanded(!expanded);
@@ -53,21 +54,7 @@ const StepCard: React.FC<StepCardProps> = ({
             {step.name}
           </span>
         </div>
-        <svg
-          className={`w-5 h-5 text-gray-600 group-hover:text-gray-900 transform transition-transform duration-200 ${
-            expanded ? "rotate-180" : ""
-          }`}
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M19 14l-7 7m0 0l-7-7m7 7V3"
-          />
-        </svg>
+
       </button>
 
       {expanded && (

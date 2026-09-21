@@ -163,7 +163,7 @@ describe("ParametersPanel", () => {
     );
 
     expect(
-      screen.getByText(/Ajuste os parametros de entrada/i)
+      screen.getByText(/Ajuste os parametros e clique em Simular/i)
     ).toBeInTheDocument();
   });
 });

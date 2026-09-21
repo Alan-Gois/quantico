@@ -45,7 +45,7 @@ const ParameterInput: React.FC<ParameterInputProps> = ({
   };
 
   const handleInputBlur = () => {
-    if (isNaN(parseFloat(inputValue))) {
+    if (!Number.isFinite(Number(inputValue)) || inputValue.trim() === "" || Number(inputValue) < min || Number(inputValue) > max) {
       setInputValue(value.toFixed(precision));
     }
   };
@@ -56,7 +56,7 @@ const ParameterInput: React.FC<ParameterInputProps> = ({
         <label className="font-semibold text-sm text-gray-700">{label}</label>
         <div className="flex items-center gap-1">
           <input
-            type="number"
+            type="number" aria-label={label}
             value={inputValue}
             onChange={handleInputChange}
             onBlur={handleInputBlur}
@@ -70,7 +70,7 @@ const ParameterInput: React.FC<ParameterInputProps> = ({
       </div>
 
       <input
-        type="range"
+        type="range" aria-label={`${label} slider`}
         value={value}
         onChange={handleSliderChange}
         min={min}

@@ -1,98 +1,25 @@
 import React, { useState, useCallback, useMemo } from "react";
-import { useStepByStepSimulation } from "../hooks/useStepByStepSimulation";
+import { useSimulationCache } from "../hooks/useSimulationCache";
 import { StepByStepSimulationParams, ResultMetric } from "../types/stepbystep";
 import ParametersPanel from "../components/ParametersPanel";
 import StepsContainer from "../components/StepsContainer";
 import ResultsPanel from "../components/ResultsPanel";
 import ComparisonChart from "../components/ComparisonChart";
 
-// Tipos para parâmetros por protocolo
+const COMMON_PARAMETERS = [
+  { key: "distance_km", label: "Distancia", min: 0, max: 100, step: 1, unit: "km" },
+  { key: "fiber_loss_db_km", label: "Fiber Loss", min: 0, max: 1, step: 0.01, unit: "dB/km" },
+];
 const BB84_PARAMETERS = [
-  {
-    key: "distance_km",
-    label: "Distancia",
-    min: 0,
-    max: 100,
-    step: 1,
-    unit: "km",
-  },
-  {
-    key: "error_rate",
-    label: "Taxa de Erro",
-    min: 0,
-    max: 0.3,
-    step: 0.01,
-    unit: "%",
-  },
-  {
-    key: "efficiency",
-    label: "Eficiencia",
-    min: 0.1,
-    max: 1.0,
-    step: 0.05,
-    unit: "adim",
-  },
-  {
-    key: "basis_choice_error",
-    label: "Erro de Base",
-    min: 0,
-    max: 0.1,
-    step: 0.01,
-    unit: "adim",
-  },
-  {
-    key: "detector_efficiency",
-    label: "Eficiencia do Detector",
-    min: 0.1,
-    max: 1.0,
-    step: 0.05,
-    unit: "adim",
-  },
+  { ...COMMON_PARAMETERS[0], max: 30 }, COMMON_PARAMETERS[1],
+  { key: "detector_efficiency", label: "Detector Efficiency", min: 0, max: 1, step: 0.01, unit: "" },
+  { key: "dark_count_rate", label: "Dark Count Rate", min: 0, max: 0.001, step: 0.00001, unit: "", precision: 5 },
 ];
-
 const MDI_QKD_PARAMETERS = [
-  {
-    key: "distance_km",
-    label: "Distancia",
-    min: 0,
-    max: 100,
-    step: 1,
-    unit: "km",
-  },
-  {
-    key: "error_rate",
-    label: "Taxa de Erro",
-    min: 0,
-    max: 0.3,
-    step: 0.01,
-    unit: "%",
-  },
-  {
-    key: "efficiency",
-    label: "Eficiencia",
-    min: 0.1,
-    max: 1.0,
-    step: 0.05,
-    unit: "adim",
-  },
-  {
-    key: "twin_photon_rate",
-    label: "Taxa Foton Gemeo",
-    min: 0,
-    max: 1.0,
-    step: 0.05,
-    unit: "adim",
-  },
-  {
-    key: "detection_efficiency",
-    label: "Eficiencia de Deteccao",
-    min: 0.1,
-    max: 1.0,
-    step: 0.05,
-    unit: "adim",
-  },
+  ...COMMON_PARAMETERS,
+  { key: "detection_efficiency", label: "Detector Efficiency", min: 0, max: 1, step: 0.01, unit: "" },
+  { key: "quantum_bit_error_rate", label: "QBER (fracao)", min: 0.05, max: 0.2, step: 0.01, unit: "" },
 ];
-
 const RESULT_METRICS: ResultMetric[] = [
   {
     key: "secret_key_rate_bps",
@@ -116,32 +43,49 @@ const StepByStepDashboard: React.FC = () => {
 
   const [bb84Params, setBb84Params] = useState<StepByStepSimulationParams>({
     distance_km: 10,
-    error_rate: 0.01,
-    efficiency: 0.8,
-    basis_choice_error: 0.05,
+    fiber_loss_db_km: 0.22,
+    dark_count_rate: 0.00001,
     detector_efficiency: 0.8,
   });
 
   const [mdiParams, setMdiParams] = useState<StepByStepSimulationParams>({
     distance_km: 10,
-    error_rate: 0.01,
-    efficiency: 0.8,
-    twin_photon_rate: 0.5,
+    fiber_loss_db_km: 0.22,
+    quantum_bit_error_rate: 0.1,
     detection_efficiency: 0.8,
   });
 
-  const { data: bb84Data, loading: bb84Loading, error: bb84Error, runSimulation: runBB84 } =
-    useStepByStepSimulation();
+  // Usar cache global para persistência entre abas
+  const {
+    data: bb84Data,
+    loading: bb84Loading,
+    error: bb84Error,
+    isCached: bb84IsCached,
+    cacheAgeSeconds: bb84CacheAge,
+    runSimulation: runBB84,
+  } = useSimulationCache("bb84_simulation");
 
-  const { data: mdiData, loading: mdiLoading, error: mdiError, runSimulation: runMDI } =
-    useStepByStepSimulation();
+  const {
+    data: mdiData,
+    loading: mdiLoading,
+    error: mdiError,
+    isCached: mdiIsCached,
+    cacheAgeSeconds: mdiCacheAge,
+    runSimulation: runMDI,
+  } = useSimulationCache("mdi_qkd_simulation");
 
   const currentData = activeTab === "bb84" ? bb84Data : mdiData;
   const currentLoading = activeTab === "bb84" ? bb84Loading : mdiLoading;
   const currentError = activeTab === "bb84" ? bb84Error : mdiError;
+  const currentIsCached = activeTab === "bb84" ? bb84IsCached : mdiIsCached;
+  const currentCacheAge = activeTab === "bb84" ? bb84CacheAge : mdiCacheAge;
   const currentParams = activeTab === "bb84" ? bb84Params : mdiParams;
   const currentParameters =
     activeTab === "bb84" ? BB84_PARAMETERS : MDI_QKD_PARAMETERS;
+
+  // O cache é gerenciado automaticamente pelo useSimulationCache
+  // que valida se os parâmetros armazenados correspondem aos parâmetros atuais
+  // Nenhuma limpeza manual necessária aqui
 
   const handleParameterChange = useCallback(
     (key: string, value: number) => {
@@ -156,9 +100,9 @@ const StepByStepDashboard: React.FC = () => {
 
   const handleSimulate = useCallback(async () => {
     if (activeTab === "bb84") {
-      await runBB84(activeTab, bb84Params);
+      await runBB84("bb84", bb84Params);
     } else {
-      await runMDI(activeTab, mdiParams);
+      await runMDI("mdi-qkd", mdiParams);
     }
   }, [activeTab, bb84Params, mdiParams, runBB84, runMDI]);
 
@@ -221,6 +165,16 @@ const StepByStepDashboard: React.FC = () => {
           </button>
         </div>
 
+        {/* Badge de Cache */}
+        {currentIsCached && currentCacheAge !== null && !currentLoading && (
+          <div className="mb-6 flex items-center gap-2 px-4 py-3 bg-green-50 border border-green-200 rounded-lg">
+            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+            <span className="text-sm text-green-700 font-medium">
+              Dados em cache há {currentCacheAge}s
+            </span>
+          </div>
+        )}
+
         {/* Conteúdo da Aba Ativa */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
           {/* Painel de Parametros */}
@@ -281,19 +235,7 @@ const StepByStepDashboard: React.FC = () => {
         {/* Mensagem Inicial */}
         {!currentData && !currentLoading && (
           <div className="text-center py-12">
-            <svg
-              className="w-16 h-16 text-gray-400 mx-auto mb-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
+
             <p className="text-gray-600 text-lg font-medium">
               Clique em "Simular" para visualizar os passos de calculo
             </p>
